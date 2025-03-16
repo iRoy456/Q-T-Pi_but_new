@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QueueT - Queue Status</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vollkorn:wght@400;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Vollkorn', serif;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f2f2f2;
+        }
+
+        .container {
+            background: white;
+            padding: 60px;
+            border: 2px solid black;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            width: 400px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 3em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .info {
+            margin: 15px 0;
+            font-size: 1.5em;
+            color: #555;
+        }
+
+        .btn {
+            margin-top: 30px;
+            padding: 15px;
+            font-size: 1.5em;
+            background: gray;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: black;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Queue Status</h1>
+        <div class="info">Estimated Waiting Time: <span id="waitingTime">15 minutes</span></div>
+        <div class="info">Next Token: <span id="nextToken">A12</span></div>
+        <div class="info">People Ahead: <span id="peopleAhead">5</span></div>
+        <div class="info">Time Taken for Next Person: <span id="timeNext">3 minutes</span></div>
+        
+        <!-- Leave Queue Button -->
+        <button class="btn" onclick="location.href='user.html'">Leave Queue</button>
+    </div>
+</body>
+</html>
