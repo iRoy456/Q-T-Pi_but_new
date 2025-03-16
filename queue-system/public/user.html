@@ -3,217 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Dashboard</title>
+    <title>User Dashboard - QueueT</title>
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f4f4;
-            padding: 20px;
-            text-align: center;
-            color: #333;
-        }
-
-        h2 {
-            font-size: 2.5em;
-            margin-bottom: 20px;
-            color: #444;
-        }
-
-        .queue-container {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .queue {
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-            padding: 20px;
-            margin: 10px;
-            width: 250px;
-            transition: transform 0.3s ease;
-        }
-
-        .queue:hover {
-            transform: translateY(-5px);
-        }
-
-        .queue h3 {
-            font-size: 1.8em;
-            margin-bottom: 10px;
-            color: #555;
-        }
-
-        .queue p {
-            font-size: 1.2em;
-            margin: 5px 0;
-            color: #777;
-        }
-
-        button {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 20px;
-            margin-top: 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1.1em;
-            transition: background-color 0.3s ease;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        /* Popup Styling */
-        .popup {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
-        }
-
-        .popup-content {
-            text-align: center;
-        }
-
-        .popup h3 {
-            margin-bottom: 20px;
-            color: #444;
-        }
-
-        .popup input[type="password"] {
-            width: 90%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-size: 1.1em;
-        }
-
-        .popup button {
-            width: 45%;
-            margin: 5px;
-        }
-
-        /* Smooth error message */
-        .error-message {
-            margin-top: 10px;
-            color: red;
-            font-size: 1.1em;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .error-visible {
-            opacity: 1;
-        }
-
-        /* Overlay */
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-            display: none;
-        }
+        /* Add your CSS here */
     </style>
-</head>
-<body>
-    <h2>Available Queues</h2>
-    <div id="queuesContainer" class="queue-container"></div>
-
-    <!-- Dark Overlay -->
-    <div class="overlay" id="overlay" onclick="closePopup()"></div>
-
-    <!-- Queue Password Popup -->
-    <div id="queuePopup" class="popup">
-        <div class="popup-content">
-            <h3>Enter Queue Password</h3>
-            <input type="password" id="queuePassword" placeholder="Enter password">
-            <div>
-                <button onclick="joinQueue()">Join</button>
-                <button onclick="closePopup()">Cancel</button>
-            </div>
-            <div id="errorMessage" class="error-message"></div>
-        </div>
-    </div>
-
     <script>
-        // Dummy queue data
-        const queues = [
-            { id: 1, name: "Queue A", waitingTime: "10 min", people: 5, password: "1234" },
-            { id: 2, name: "Queue B", waitingTime: "20 min", people: 8, password: "5678" },
-            { id: 3, name: "Queue C", waitingTime: "5 min", people: 2, password: "abcd" },
-            { id: 4, name: "Queue D", waitingTime: "15 min", people: 6, password: "4321" }
-        ];
+        let userId = null; // Store the user ID after login
 
-        // Load queues dynamically
-        function loadQueues() {
-            const container = document.getElementById("queuesContainer");
-            container.innerHTML = "";
-            queues.forEach(queue => {
-                const queueDiv = document.createElement("div");
-                queueDiv.classList.add("queue");
-                queueDiv.innerHTML = `
-                    <h3>${queue.name}</h3>
-                    <p>Waiting Time: ${queue.waitingTime}</p>
-                    <p>People in Queue: ${queue.people}</p>
-                    <button onclick="openPopup(${queue.id})">Join Queue</button>
-                `;
-                container.appendChild(queueDiv);
-            });
-        }
+        // Function to join a queue
+        async function joinQueue() {
+            const queueCode = document.getElementById("queueCode").value;
 
-        // Open password popup
-        let selectedQueueId = null;
-        function openPopup(queueId) {
-            selectedQueueId = queueId;
-            document.getElementById("queuePassword").value = ""; // Clear previous input
-            document.getElementById("errorMessage").classList.remove("error-visible"); // Hide error
-            document.getElementById("overlay").style.display = "block";
-            document.getElementById("queuePopup").style.display = "block";
-        }
+            if (!queueCode) {
+                alert("Queue code is required!");
+                return;
+            }
 
-        // Close popup
-        function closePopup() {
-            document.getElementById("overlay").style.display = "none";
-            document.getElementById("queuePopup").style.display = "none";
-        }
+            try {
+                const response = await fetch("/api/queue/join", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ queueCode, userId }),
+                });
 
-        // Show error message
-        function showError(message) {
-            const errorMessage = document.getElementById("errorMessage");
-            errorMessage.textContent = message;
-            errorMessage.classList.add("error-visible");
-        }
+                const data = await response.json();
 
-        // Join queue with password check
-        function joinQueue() {
-            const passwordInput = document.getElementById("queuePassword").value;
-            const queue = queues.find(q => q.id === selectedQueueId);
-
-            if (queue && passwordInput === queue.password) {
-                closePopup();
-                window.location.href = "queue.html";  // Redirect to queue page
-            } else {
-                showError("Incorrect password! Please try again.");
+                if (response.ok) {
+                    alert("Joined queue successfully!");
+                    loadQueueStatus(queueCode);
+                } else {
+                    alert(data.error || "Failed to join queue");
+                }
+            } catch (error) {
+                console.error("Error joining queue:", error);
+                alert("An error occurred. Please try again.");
             }
         }
 
-        window.onload = loadQueues;
+        // Function to load queue status
+        async function loadQueueStatus(queueCode) {
+            try {
+                const response = await fetch(/api/queue/status/${queueCode});
+                const data = await response.json();
+
+                if (response.ok) {
+                    const queueStatus = document.getElementById("queueStatus");
+                    queueStatus.innerHTML = `
+                        <h3>${data.queue.name}</h3>
+                        <p>Your position: ${data.queue.members.indexOf(userId) + 1}</p>
+                        <p>Estimated wait time: ${data.waitTime}</p>
+                        <button onclick="leaveQueue('${queueCode}')">Leave Queue</button>
+                    `;
+                } else {
+                    alert(data.error || "Failed to load queue status");
+                }
+            } catch (error) {
+                console.error("Error loading queue status:", error);
+                alert("An error occurred. Please try again.");
+            }
+        }
+
+        // Function to leave a queue
+        async function leaveQueue(queueCode) {
+            try {
+                const response = await fetch("/api/queue/leave", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ queueCode, userId }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert("Left queue successfully!");
+                    document.getElementById("queueStatus").innerHTML = "";
+                } else {
+                    alert(data.error || "Failed to leave queue");
+                }
+            } catch (error) {
+                console.error("Error leaving queue:", error);
+                alert("An error occurred. Please try again.");
+            }
+        }
     </script>
+</head>
+<body>
+    <div class="container">
+        <h1>User Dashboard</h1>
+        <input type="text" id="queueCode" placeholder="Enter queue code">
+        <button onclick="joinQueue()">Join Queue</button>
+        <div id="queueStatus"></div>
+    </div>
 </body>
 </html>

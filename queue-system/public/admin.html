@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - QueueT</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+        }
+        input {
+            padding: 10px;
+            margin: 10px 0;
+            width: 80%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .queue {
+            background: #f9f9f9;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            text-align: left;
+        }
+        .queue h3 {
+            margin: 0;
+            color: #333;
+        }
+        .queue p {
+            margin: 5px 0;
+            color: #666;
+        }
+    </style>
+    <script>
+        let adminId = null; // Store the admin ID after login
+
+        // Function to create a queue
+        async function createQueue() {
+            const queueName = document.getElementById("queueName").value;
+
+            if (!queueName) {
+                alert("Queue name is required!");
+                return;
+            }
+
+            try {
+                const response = await fetch("/api/queue/create", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name: queueName, adminId }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(Queue created successfully! Code: ${data.queue.code});
+                    displayQueueCode(data.queue); // Display the queue code
+                } else {
+                    alert(data.error || "Failed to create queue");
+                }
+            } catch (error) {
+                console.error("Error creating queue:", error);
+                alert("An error occurred. Please try again.");
+            }
+        }
+
+        // Function to display the queue code
+        function displayQueueCode(queue) {
+            const queueCodeDisplay = document.getElementById("queueCodeDisplay");
+
+            // Create a new element to display the queue code
+            const queueCodeElement = document.createElement("div");
+            queueCodeElement.innerHTML = `
+                <h3>${queue.name}</h3>
+                <p>Queue Code: ${queue.code}</p>
+            `;
+
+            // Add the queue code to the display area
+            queueCodeDisplay.appendChild(queueCodeElement);
+        }
+
+        // Load queues when the page loads
+        window.onload = () => {
+            // Assume adminId is set after login
+            adminId = "admin123"; // Replace with actual admin ID
+        };
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Dashboard</h1>
+        <input type="text" id="queueName" placeholder="Enter queue name">
+        <button onclick="createQueue()">Create Queue</button>
+        <div id="queueCodeDisplay"></div>
+    </div>
+</body>
+</html>
