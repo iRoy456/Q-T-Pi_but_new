@@ -5,7 +5,103 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QueueT - Sign Up</title>
     <style>
-        /* Your existing CSS */
+        @import url('https://fonts.googleapis.com/css2?family=Vollkorn:wght@400;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Vollkorn', serif;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-size: cover;
+            background-position: center;
+            animation: changeBg 1.5s infinite steps(1);
+            overflow: hidden;
+            padding: 50px 0;
+        }
+
+        @keyframes changeBg {
+            0% { background-image: url('1.jpg'); }
+            33% { background-image: url('2.jpg'); }
+            66% { background-image: url('3.jpg'); }
+        }
+
+        .container {
+            background: white;
+            padding: 60px;
+            border: 2px solid black;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            width: 400px;
+            height: 600px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 3em;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 2px solid black;
+            border-radius: 10px;
+            font-size: 1em;
+        }
+
+        .role-select {
+            margin: 15px 0;
+            font-size: 1em;
+        }
+
+        .role-select label {
+            margin-right: 10px;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            margin: 15px 0;
+            padding: 15px;
+            font-size: 1.2em;
+            background: #444;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: 0.3s;
+            border-radius: 15px;
+        }
+
+        input[name="role"]:checked + label {
+            color: grey;
+        }
+
+        .btn:hover {
+            background: black;
+        }
+
+        .login-link {
+            margin-top: 10px;
+        }
+
+        .login-link a {
+            color: grey;
+            text-decoration: none;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
     </style>
     <script>
         async function signUp() {
@@ -15,10 +111,8 @@
             const confirmPassword = document.getElementById("confirmPassword").value;
             const role = document.querySelector('input[name="role"]:checked').value;
 
-            // Log the data being sent
             console.log({ username, phone, password, confirmPassword, role });
 
-            // Validate input
             if (!username || !phone || !password || !confirmPassword || !role) {
                 alert("All fields are required!");
                 return;
@@ -29,7 +123,6 @@
                 return;
             }
 
-            // Send signup request to the backend
             try {
                 const response = await fetch("/api/signup", {
                     method: "POST",
@@ -41,7 +134,7 @@
 
                 if (response.ok) {
                     alert("Signup successful! Redirecting to login page...");
-                    window.location.href = "/login"; // Redirect to login page
+                    window.location.href = "/login";
                 } else {
                     alert(data.error || "Signup failed");
                 }
@@ -60,14 +153,12 @@
         <input type="password" id="password" class="input-field" placeholder="Password">
         <input type="password" id="confirmPassword" class="input-field" placeholder="Confirm Password">
         <div class="role-select">
-            <label>
-                <input type="radio" name="role" value="user" checked> User
-            </label>
-            <label>
-                <input type="radio" name="role" value="admin"> Admin
-            </label>
+            <input type="radio" id="user" name="role" value="user" checked>
+            <label for="user">User</label>
+            <input type="radio" id="admin" name="role" value="admin">
+            <label for="admin">Admin</label>
         </div>
-        <button class="signup-btn" onclick="signUp()">SIGN UP</button>
+        <button class="btn" onclick="signUp()">SIGN UP</button>
         <div class="login-link">
             Already have an account? <a href="/login">Click here to Log in</a>
         </div>

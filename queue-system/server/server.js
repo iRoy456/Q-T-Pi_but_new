@@ -68,7 +68,14 @@ app.post("/api/login", (req, res) => {
         return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    res.status(200).json({ message: "Login successful", user });
+    // Redirect based on role
+    if (role === "admin") {
+        res.status(200).json({ message: "Login successful", redirect: "/admin", user });
+    } else if (role === "user") {
+        res.status(200).json({ message: "Login successful", redirect: "/user", user });
+    } else {
+        res.status(400).json({ error: "Invalid role" });
+    }
 });
 
 // 3. Create a Queue (Admin)

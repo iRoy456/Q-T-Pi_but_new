@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Dashboard - QueueT</title>
+    <title>Admin Dashboard - QueueT</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -40,105 +40,139 @@
         button:hover {
             background-color: #0056b3;
         }
-        #queueStatus {
-            margin-top: 20px;
+        .queue {
+            background: #f9f9f9;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
             text-align: left;
         }
-        #queueStatus h3 {
+        .queue h3 {
             margin: 0;
             color: #333;
         }
-        #queueStatus p {
+        .queue p {
             margin: 5px 0;
             color: #666;
         }
     </style>
     <script>
-        let userId = "user123"; // Replace with actual user ID after login
+        let adminId = null; // Store the admin ID after login
 
-        // Function to join a queue
-        async function joinQueue() {
-            const queueCode = document.getElementById("queueCode").value;
+        // Function to create a queue
+        async function createQueue() {
+            const queueName = document.getElementById("queueName").value;
 
-            if (!queueCode) {
-                alert("Queue code is required!");
+            if (!queueName) {
+                alert("Queue name is required!");
                 return;
             }
 
             try {
-                const response = await fetch("/api/queue/join", {
+                const response = await fetch("/api/queue/create", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ queueCode, userId }),
+                    body: JSON.stringify({ name: queueName, adminId }),
                 });
 
                 const data = await response.json();
 
                 if (response.ok) {
-                    alert("Joined queue successfully!");
-                    loadQueueStatus(queueCode);
+                    alert(`Queue created successfully! Code: ${data.queue.code}`);
+                    addQueueToList(data.queue); // Add the new queue to the list
                 } else {
-                    alert(data.error || "Failed to join queue");
+                    alert(data.error || "Failed to create queue");
                 }
             } catch (error) {
-                console.error("Error joining queue:", error);
+                console.error("Error creating queue:", error);
                 alert("An error occurred. Please try again.");
             }
         }
 
-        // Function to load queue status
-        async function loadQueueStatus(queueCode) {
+        // Function to add a new queue to the list
+        function addQueueToList(queue) {
+            const queueList = document.getElementById("queueList");
+
+            // Create a new queue element
+            const queueElement = document.createElement("div");
+            queueElement.classList.add("queue");
+            queueElement.innerHTML = `
+                <h3>${queue.name}</h3>
+                <p>Code: ${queue.code}</p>
+                <p>Status: ${queue.status}</p>
+                <button onclick="moveQueueForward('${queue.code}')">Move Forward</button>
+            `;
+
+            // Add the new queue to the top of the list
+            queueList.prepend(queueElement);
+        }
+
+        // Function to load all queues
+        async function loadQueues() {
             try {
-                const response = await fetch(`/api/queue/status/${queueCode}`);
+                const response = await fetch(`/api/queues/${adminId}`);
                 const data = await response.json();
 
                 if (response.ok) {
-                    const queueStatus = document.getElementById("queueStatus");
-                    queueStatus.innerHTML = `
-                        <h3>${data.queue.name}</h3>
-                        <p>Your position: ${data.queue.members.indexOf(userId) + 1}</p>
-                        <p>Estimated wait time: ${data.waitTime}</p>
-                        <button onclick="leaveQueue('${queueCode}')">Leave Queue</button>
-                    `;
+                    const queueList = document.getElementById("queueList");
+                    queueList.innerHTML = data.queues
+                        .map((queue) => `
+                            <div class="queue">
+                                <h3>${queue.name}</h3>
+                                <p>Code: ${queue.code}</p>
+                                <p>Status: ${queue.status}</p>
+                                <button onclick="moveQueueForward('${queue.code}')">Move Forward</button>
+                            </div>
+                        `)
+                        .join("");
                 } else {
-                    alert(data.error || "Failed to load queue status");
+                    alert(data.error || "Failed to load queues");
                 }
             } catch (error) {
-                console.error("Error loading queue status:", error);
+                console.error("Error loading queues:", error);
                 alert("An error occurred. Please try again.");
             }
         }
 
-        // Function to leave a queue
-        async function leaveQueue(queueCode) {
+        // Function to move the queue forward
+        async function moveQueueForward(queueCode) {
             try {
-                const response = await fetch("/api/queue/leave", {
+                const response = await fetch("/api/queue/next", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ queueCode, userId }),
+                    body: JSON.stringify({ queueCode, adminId }),
                 });
 
                 const data = await response.json();
 
                 if (response.ok) {
-                    alert("Left queue successfully!");
-                    document.getElementById("queueStatus").innerHTML = "";
+                    alert("Queue moved forward!");
+                    loadQueues(); // Refresh the queue list
                 } else {
-                    alert(data.error || "Failed to leave queue");
+                    alert(data.error || "Failed to move queue forward");
                 }
             } catch (error) {
-                console.error("Error leaving queue:", error);
+                console.error("Error moving queue forward:", error);
                 alert("An error occurred. Please try again.");
             }
         }
+
+        // Set admin ID after login
+        window.onload = () => {
+            adminId = localStorage.getItem("userId"); // Retrieve admin ID from localStorage
+            if (!adminId) {
+                window.location.href = "/login"; // Redirect to login if no admin ID
+            }
+            loadQueues();
+        };
     </script>
 </head>
 <body>
     <div class="container">
-        <h1>User Dashboard</h1>
-        <input type="text" id="queueCode" placeholder="Enter queue code">
-        <button onclick="joinQueue()">Join Queue</button>
-        <div id="queueStatus"></div>
+        <h1>Admin Dashboard</h1>
+        <input type="text" id="queueName" placeholder="Enter queue name">
+        <button onclick="createQueue()">Create Queue</button>
+        <div id="queueList"></div>
     </div>
 </body>
 </html>
