@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QueueT - Welcome</title>
+    <title>QueueT - Login</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Vollkorn:wght@400;700&display=swap');
 
@@ -126,23 +126,80 @@
         .signup-btn:hover {
             background: black;
         }
+
+        .role-select {
+            margin: 20px 0;
+            font-size: 1.2em;
+        }
+
+        .role-select label {
+            margin-right: 10px;
+        }
     </style>
+    <script>
+        async function login() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            const role = document.querySelector('input[name="role"]:checked').value;
+
+            // Validate input
+            if (!username || !password) {
+                alert("Username and password are required!");
+                return;
+            }
+
+            try {
+                const response = await fetch("/api/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password, role }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert("Login successful! Redirecting...");
+                    if (role === "admin") {
+                        window.location.href = "/admin"; // Redirect to admin dashboard
+                    } else {
+                        window.location.href = "/user"; // Redirect to user dashboard
+                    }
+                } else {
+                    alert(data.error || "Invalid credentials");
+                }
+            } catch (error) {
+                console.error("Error during login:", error);
+                alert("An error occurred. Please try again.");
+            }
+        }
+    </script>
 </head>
 <body>
     <div class="container">
         <h1>QUEUE T</h1>
-        <input type="text" class="input-field" placeholder="Username">
-        <input type="password" class="input-field" placeholder="Password">
-        <button class="btn" onclick="location.href='login.html'">LOG IN</button>
+        <!-- Username Field -->
+        <input type="text" id="username" class="input-field" placeholder="Username">
+        <!-- Password Field -->
+        <input type="password" id="password" class="input-field" placeholder="Password">
+        <!-- Role Selection -->
+        <div class="role-select">
+            <label>
+                <input type="radio" name="role" value="user" checked> User
+            </label>
+            <label>
+                <input type="radio" name="role" value="admin"> Admin
+            </label>
+        </div>
+        <!-- Log In Button -->
+        <button class="btn" onclick="login()">LOG IN</button>
         
         <div class="or-container">
             <div class="line"></div>
             <span class="or-text">OR</span>
         </div>
         
-        <!-- Updated Sign Up Button -->
+        <!-- Sign Up Button -->
         <a href="/signuppage" class="signup-btn">SIGN UP</a>
     </div>
 </body>
 </html>
-

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard - QueueT</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+        }
+        input {
+            padding: 10px;
+            margin: 10px 0;
+            width: 80%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #queueStatus {
+            margin-top: 20px;
+            text-align: left;
+        }
+        #queueStatus h3 {
+            margin: 0;
+            color: #333;
+        }
+        #queueStatus p {
+            margin: 5px 0;
+            color: #666;
+        }
+    </style>
+    <script>
+        let userId = "user123"; // Replace with actual user ID after login
+
+        // Function to join a queue
+        async function joinQueue() {
+            const queueCode = document.getElementById("queueCode").value;
+
+            if (!queueCode) {
+                alert("Queue code is required!");
+                return;
+            }
+
+            try {
+                const response = await fetch("/api/queue/join", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ queueCode, userId }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert("Joined queue successfully!");
+                    loadQueueStatus(queueCode);
+                } else {
+                    alert(data.error || "Failed to join queue");
+                }
+            } catch (error) {
+                console.error("Error joining queue:", error);
+                alert("An error occurred. Please try again.");
+            }
+        }
+
+        // Function to load queue status
+        async function loadQueueStatus(queueCode) {
+            try {
+                const response = await fetch(`/api/queue/status/${queueCode}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    const queueStatus = document.getElementById("queueStatus");
+                    queueStatus.innerHTML = `
+                        <h3>${data.queue.name}</h3>
+                        <p>Your position: ${data.queue.members.indexOf(userId) + 1}</p>
+                        <p>Estimated wait time: ${data.waitTime}</p>
+                        <button onclick="leaveQueue('${queueCode}')">Leave Queue</button>
+                    `;
+                } else {
+                    alert(data.error || "Failed to load queue status");
+                }
+            } catch (error) {
+                console.error("Error loading queue status:", error);
+                alert("An error occurred. Please try again.");
+            }
+        }
+
+        // Function to leave a queue
+        async function leaveQueue(queueCode) {
+            try {
+                const response = await fetch("/api/queue/leave", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ queueCode, userId }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert("Left queue successfully!");
+                    document.getElementById("queueStatus").innerHTML = "";
+                } else {
+                    alert(data.error || "Failed to leave queue");
+                }
+            } catch (error) {
+                console.error("Error leaving queue:", error);
+                alert("An error occurred. Please try again.");
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>User Dashboard</h1>
+        <input type="text" id="queueCode" placeholder="Enter queue code">
+        <button onclick="joinQueue()">Join Queue</button>
+        <div id="queueStatus"></div>
+    </div>
+</body>
+</html>
